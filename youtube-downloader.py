@@ -5,6 +5,7 @@ if __name__ == '__main__':
 
     THE_FOLDER = sys.argv[1] 
     downloader = sys.argv[2]
+    store_dir = sys.argv[3]
     print(f'{THE_FOLDER}')
 
 
@@ -20,8 +21,11 @@ if __name__ == '__main__':
             with open(youtube_link_path, 'r') as yt_link:
                 link= yt_link.readline()
                 print ("------Youtube link:", link)
-                os.system(f'{downloader} -x --audio-format \'wav\' -o \'./wav/{song_dir}.wav\' \'{link}\'')
-                print ("------ Download Success", link)
+                dest = os.path.join(store_dir, f'{song_dir}.tmp')
+                audio_format = f'--audio-format wav'
+                audio_quality = f'--audio-quality 2'
+                download_quality = f'-f best'
+                os.system(f'{downloader} -x {audio_format} {audio_quality} -o {dest} {link}')
         except:
             print ("------Error: YT link file not exist or can't be read")
         
