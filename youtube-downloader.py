@@ -6,8 +6,7 @@ if __name__ == '__main__':
     THE_FOLDER = sys.argv[1] 
     downloader = sys.argv[2]
     store_dir = sys.argv[3]
-    print(f'{THE_FOLDER}')
-
+    n = 0
 
     for song_dir in os.listdir(THE_FOLDER):
         if not os.path.isdir(os.path.join(THE_FOLDER, song_dir)):
@@ -15,6 +14,7 @@ if __name__ == '__main__':
 
         youtube_link_path = os.path.join(THE_FOLDER, song_dir, f'{song_dir}_link.txt')
 
+        print (f'\n---Processing {n}-th song')
         print ("---Youtube link path:", youtube_link_path)
 
         try:
@@ -29,4 +29,5 @@ if __name__ == '__main__':
         except:
             print ("------Error: YT link file not exist or can't be read")
         
+        n += 1
 

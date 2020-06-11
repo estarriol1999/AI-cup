@@ -4,3 +4,4 @@ wav*
 *.pkl
 *.npy
 *.json
+tmp*
