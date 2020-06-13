@@ -4,4 +4,6 @@ wav*
 *.pkl
 *.npy
 *.json
+*.swp
+__pycache__
 tmp*

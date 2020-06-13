@@ -112,7 +112,6 @@ def notes2list(notes):
     return result
 
 def main(wav_path, pitch_path):
-    #print ("start processing time: %f" %(time.time()))
     
     ep_frames = json.load(open(pitch_path))
 
@@ -123,8 +122,6 @@ def main(wav_path, pitch_path):
 
     result = notes2list(notes)
 
-    #print ("end processing time: %f" %(time.time()))
-    
     return result
 
 
@@ -134,7 +131,6 @@ if __name__ == '__main__':
     raw = []
     num = 0
     for song_dir in os.listdir(wav_dir):
-        if num > 2: break
         song_num = song_dir.replace(f'.wav', '')
         wav_path = os.path.join(wav_dir, song_dir)
         pitch_path = os.path.join(pitch_dir, song_num, f'{song_num}_vocal.json')
