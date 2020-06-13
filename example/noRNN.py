@@ -13,8 +13,6 @@ from madmom.features.onsets import SpectralOnsetProcessor
 from madmom.audio.signal import normalize
 from scipy import signal
 
-from postprocess import postprocess
-
 class Note:
     def __init__(self, frame, frame_pitch, onset_time, offset_time):
         self.frame_pitch = frame_pitch
@@ -104,39 +102,30 @@ def get_offset(notes):
 
     return notes
 
-def notes2list(notes):
-    result = []
-    for note in notes:
-        if note.pitch != 0:
-            result.append([note.onset_time, note.offset_time, note.pitch])
-    return result
+def notes2txt(notes, filename):
+    with open(filename, 'w') as file:
+        for note in notes:
+            if note.pitch != 0:
+                file.write("%f %f %d\n" %(note.onset_time, note.offset_time, note.pitch))
+    return
 
-def main(wav_path, pitch_path):
+def main(wav_path, ep_path, output_path):
+    print ("start processing time: %f" %(time.time()))
     
-    ep_frames = json.load(open(pitch_path))
+    ep_frames = json.load(open(ep_path))
 
     onset_times = get_onset(wav_path)
     notes = generate_notes(onset_times, ep_frames)
     notes = get_note_level_pitch(notes)
     notes = get_offset(notes)
 
-    result = notes2list(notes)
+    notes2txt(notes, output_path)
 
-    return result
-
+    print ("end processing time: %f" %(time.time()))
 
 if __name__ == '__main__':
-    wav_dir = sys.argv[1]
-    pitch_dir = sys.argv[2]
-    raw = []
-    num = 0
-    for song_dir in os.listdir(wav_dir):
-        song_num = song_dir.replace(f'.wav', '')
-        wav_path = os.path.join(wav_dir, song_dir)
-        pitch_path = os.path.join(pitch_dir, song_num, f'{song_num}_vocal.json')
-        raw.append(main(wav_path, pitch_path))
 
-        print(f'{num}-th done')
-        num += 1
-
-    postprocess(f'upload.json', raw)
+    wav_path= "001_voc.wav"
+    ep_path= "Vocal.json"
+    output_path= "test.txt"
+    main(wav_path=wav_path, ep_path=ep_path, output_path=output_path)
