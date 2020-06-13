@@ -90,10 +90,11 @@ def get_note_level_pitch(notes):
             mode_notes[note].pitch = 0
         else:
             total = np.array(total)
+            print(total)
             mean_notes[note].pitch = int(np.mean(total))
-            median_notes[note].pitch = round(np.median(total), 0)
+            median_notes[note].pitch = int(np.median(total))
             if mean_notes[note].pitch != median_notes[note].pitch:
-                print(f'different !!')
+                print(f'different  too !!')
             mode_notes[note].pitch = round(stats.mode(total)[0][0], 0)
     
     return mean_notes, median_notes, mode_notes
@@ -142,6 +143,7 @@ if __name__ == '__main__':
     pitch_dir = sys.argv[2]
     begin = int(sys.argv[3])
     end = int(sys.argv[4])
+    output_loc = sys.argv[5]
     raw = []
     num = 0
     for song_num in range(begin, end):
@@ -154,4 +156,6 @@ if __name__ == '__main__':
         raw.append([song_num, main(wav_path, pitch_path)])
         print(f'{song_num}-th song done')
         num += 1
-    postprocess(f'{begin}_{end}', raw)
+
+    output_file_name = os.path.join(output_loc, f'{begin}_{end}')
+    postprocess(output_file_name, raw)

@@ -7,3 +7,4 @@ wav*
 *.swp
 __pycache__
 tmp*
+test*
