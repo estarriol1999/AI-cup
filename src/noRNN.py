@@ -10,6 +10,7 @@ import time
 
 from madmom.audio.filters import LogarithmicFilterbank
 from madmom.features.onsets import SpectralOnsetProcessor
+from madmom.features.onsets import RNNOnsetProcessor
 from madmom.audio.signal import normalize
 from scipy import signal
 
@@ -30,7 +31,8 @@ def get_onset(wav_path):
     wav_data= signal.sosfilt(sos, y)
     wav_data= normalize(wav_data)
 
-    sodf = SpectralOnsetProcessor(onset_method='complex_flux', fps= 50, filterbank=LogarithmicFilterbank, fmin= 100, num_bands= 24, norm= True)
+    #sodf = SpectralOnsetProcessor(onset_method='complex_flux', fps= 50, filterbank=LogarithmicFilterbank, fmin= 100, num_bands= 24, norm= True)
+    sodf = RNNOnsetProcessor()
     from madmom.audio.signal import Signal
     onset_strength= (sodf(Signal(data= wav_data, sample_rate= sr)))
     onset_strength= librosa.util.normalize(onset_strength)
@@ -75,29 +77,19 @@ def generate_notes(onset_times, ep_frames):
     return notes
 
 def get_note_level_pitch(notes):
-    mean_notes = notes
-    median_notes = notes
-    mode_notes = notes
-    for note in range(len(notes)):
-        total = []
-        for i in range(len(notes[note].frame_pitch)):
-            if notes[note].frame_pitch[i] > 0:
-                total.append(notes[note].frame_pitch[i])
+    for note in notes:
+        total= []
+        for i in range(len(note.frame_pitch)):
+            if note.frame_pitch[i] > 0:
+                total.append(note.frame_pitch[i])
 
         if len(total) == 0:
-            mean_notes[note].pitch = 0
-            median_notes[note].pitch = 0
-            mode_notes[note].pitch = 0
+            note.pitch= 0
         else:
             total = np.array(total)
-            print(total)
-            mean_notes[note].pitch = int(np.mean(total))
-            median_notes[note].pitch = int(np.median(total))
-            if mean_notes[note].pitch != median_notes[note].pitch:
-                print(f'different  too !!')
-            mode_notes[note].pitch = round(stats.mode(total)[0][0], 0)
-    
-    return mean_notes, median_notes, mode_notes
+            note.pitch = int(np.median(total)) 
+
+    return notes
 
 def get_offset(notes):
     for note in notes:
@@ -109,7 +101,6 @@ def get_offset(notes):
             
             if offset > 2:
                 note.offset_time= note.frame[offset]
-
     return notes
 
 def notes2list(notes):
@@ -125,25 +116,18 @@ def main(wav_path, pitch_path):
 
     onset_times = get_onset(wav_path)
     notes = generate_notes(onset_times, ep_frames)
-    mean_notes, median_notes, mode_notes = get_note_level_pitch(notes)
+    notes = get_note_level_pitch(notes)
+    notes = notes2list(notes)
 
-    mean_notes = get_offset(mean_notes)
-    median_notes = get_offset(median_notes)
-    mode_notes = get_offset(mode_notes)
-
-    mean_result = notes2list(mean_notes)
-    median_result = notes2list(median_notes)
-    mode_result = notes2list(mode_notes)
-
-    return mean_result, median_result, mode_result
+    return notes
 
 
 if __name__ == '__main__':
     wav_dir = sys.argv[1]
     pitch_dir = sys.argv[2]
-    begin = int(sys.argv[3])
-    end = int(sys.argv[4])
-    output_loc = sys.argv[5]
+    output_loc = sys.argv[3]
+    begin = int(sys.argv[4])
+    end = int(sys.argv[5])
     raw = []
     num = 0
     for song_num in range(begin, end):

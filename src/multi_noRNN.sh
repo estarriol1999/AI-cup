@@ -1,8 +1,9 @@
 #!/bin/zsh
 wav_path=$1
 vocal_path=$2
-song_num=$3
-process_num=$4
+output_path=$3
+song_num=$4
+process_num=$5
 size=$(echo "$song_num / $process_num" | bc)
 
 echo "each process handle $size / $song_num songs" 
@@ -16,8 +17,8 @@ do
 
     end=$(echo "$size * ($i+1) + 1" | bc)
    
-    command="${command}python3 noRNN.py $wav_path $vocal_path $begin $end & "
-    echo "python3 noRNN.py $wav_path $vocal_path $begin $end &"
+    command="${command}python3 noRNN.py $wav_path $vocal_path $output_path  $begin $end & "
+    echo "python3 noRNN.py $wav_path $vocal_path $output_path  $begin $end &"
 done
 
-#eval $command
+eval $command
