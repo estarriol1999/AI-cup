@@ -1,6 +1,7 @@
 import json as js
+import sys as sys
 
-with open(f'upload.json') as upload:
+with open(sys.argv[1]) as upload:
     tmp = js.load(upload)
 
 for i in range(1, 1501):

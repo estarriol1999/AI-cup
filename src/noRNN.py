@@ -11,6 +11,7 @@ import time
 from madmom.audio.filters import LogarithmicFilterbank
 from madmom.features.onsets import SpectralOnsetProcessor
 from madmom.features.onsets import RNNOnsetProcessor
+from madmom.features.onsets import CNNOnsetProcessor
 from madmom.audio.signal import normalize
 from scipy import signal
 
@@ -31,8 +32,9 @@ def get_onset(wav_path):
     wav_data= signal.sosfilt(sos, y)
     wav_data= normalize(wav_data)
 
-    #sodf = SpectralOnsetProcessor(onset_method='complex_flux', fps= 50, filterbank=LogarithmicFilterbank, fmin= 100, num_bands= 24, norm= True)
-    sodf = RNNOnsetProcessor()
+    sodf = SpectralOnsetProcessor(onset_method='complex_flux', fps= 50, filterbank=LogarithmicFilterbank, fmin= 100, num_bands= 24, norm= True)
+    #sodf = CNNOnsetProcessor()
+    #sodf = RNNOnsetProcessor()
     from madmom.audio.signal import Signal
     onset_strength= (sodf(Signal(data= wav_data, sample_rate= sr)))
     onset_strength= librosa.util.normalize(onset_strength)
@@ -135,7 +137,7 @@ if __name__ == '__main__':
         pitch_path = os.path.join(pitch_dir, f'{song_num}', f'{song_num}_vocal.json')
         if not os.path.isfile(wav_path) or not os.path.isfile(pitch_path):
             print(f'{song_num}-th song not found')
-            raw.append([song_num, ([], [], [])])
+            raw.append([song_num, []])
             continue
         raw.append([song_num, main(wav_path, pitch_path)])
         print(f'{song_num}-th song done')
