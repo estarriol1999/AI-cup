@@ -8,7 +8,6 @@ size=$(echo "$song_num / $process_num" | bc)
 
 echo "each process handle $size / $song_num songs" 
 more=$(echo "($song_num % $process_num) > 0" | bc)
-echo "$more"
 command=""
 
 for ((i=0; i<$process_num + $more; i++))

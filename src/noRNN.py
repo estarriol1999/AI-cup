@@ -36,8 +36,8 @@ def get_onset(wav_path):
     wav_data= signal.sosfilt(sos, y)
     wav_data= normalize(wav_data)
 
-    sodf = SpectralOnsetProcessor(onset_method='complex_flux', fps= 50, filterbank=LogarithmicFilterbank, fmin= 100, num_bands= 24, norm= True)
-    #sodf = CNNOnsetProcessor()
+    #sodf = SpectralOnsetProcessor(onset_method='complex_flux', fps= 50, filterbank=LogarithmicFilterbank, fmin= 100, num_bands= 24, norm= True)
+    sodf = CNNOnsetProcessor()
     #sodf = RNNOnsetProcessor()
     from madmom.audio.signal import Signal
     onset_strength= (sodf(Signal(data= wav_data, sample_rate= sr)))
@@ -150,7 +150,7 @@ if __name__ == '__main__':
         if not os.path.isfile(wav_path) or not os.path.isfile(pitch_path):
             print(f'{song_num}-th song not found')
             median_raw[song_num] = []
-            mode_result[song_num] = []
+            mode_raw[song_num] = []
             continue
         median_result, mode_result = main(wav_path, pitch_path)
         median_raw[song_num] = median_result
