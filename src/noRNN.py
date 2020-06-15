@@ -81,15 +81,15 @@ def generate_notes(onset_times, ep_frames):
 def get_note_level_pitch(notes):
     for note in notes:
         total= []
-        for i in range(len(note.frame_pitch)):
-            if note.frame_pitch[i] > 0:
-                total.append(note.frame_pitch[i])
+        for pitch in note.frame_pitch:
+            if pitch > 0:
+                total.append(pitch)
 
         if len(total) == 0:
             note.pitch= 0
         else:
             total = np.array(total)
-            note.pitch = int(np.median(total)) 
+            note.pitch = round(np.median(total), 0) 
 
     return notes
 
