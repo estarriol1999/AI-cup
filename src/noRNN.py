@@ -17,6 +17,10 @@ from scipy import signal
 
 from postprocess import postprocess
 
+MEAN = 1
+MEDIAN = 2
+MODE = 3
+
 class Note:
     def __init__(self, frame, frame_pitch, onset_time, offset_time):
         self.frame_pitch = frame_pitch
@@ -78,7 +82,7 @@ def generate_notes(onset_times, ep_frames):
         
     return notes
 
-def get_note_level_pitch(notes):
+def get_note_level_pitch(notes, method):
     for note in notes:
         total= []
         for pitch in note.frame_pitch:
@@ -88,9 +92,13 @@ def get_note_level_pitch(notes):
         if len(total) == 0:
             note.pitch= 0
         else:
-            total = np.array(total)
-            note.pitch = round(np.median(total), 0) 
-
+            if method == MEDIAN :
+                note.pitch = round(np.median(total), 0) 
+            elif method == MODE:
+                total = [round(i, 1) for i in total]
+                note.pitch = round(stats.mode(total)[0][0], 0)
+            elif method == MEAN:
+                note.pitch = round(sum(total)/len(total), 0) 
     return notes
 
 def get_offset(notes):
@@ -118,30 +126,39 @@ def main(wav_path, pitch_path):
 
     onset_times = get_onset(wav_path)
     notes = generate_notes(onset_times, ep_frames)
-    notes = get_note_level_pitch(notes)
-    notes = notes2list(notes)
+    
+    median_notes   = get_note_level_pitch(notes, MEDIAN)
+    mode_notes   = get_note_level_pitch(notes, MODE)
 
-    return notes
+    median_result = notes2list(median_notes)
+    mode_result = notes2list(mode_notes)
+
+    return median_result, mode_result 
 
 
 if __name__ == '__main__':
     wav_dir = sys.argv[1]
     pitch_dir = sys.argv[2]
-    output_loc = sys.argv[3]
+    output_dir = sys.argv[3]
     begin = int(sys.argv[4])
     end = int(sys.argv[5])
-    raw = []
-    num = 0
+    median_raw = {}
+    mode_raw = {}
     for song_num in range(begin, end):
         wav_path = os.path.join(wav_dir, f'{song_num}.wav')
         pitch_path = os.path.join(pitch_dir, f'{song_num}', f'{song_num}_vocal.json')
         if not os.path.isfile(wav_path) or not os.path.isfile(pitch_path):
             print(f'{song_num}-th song not found')
-            raw.append([song_num, []])
+            median_raw[song_num] = []
+            mode_result[song_num] = []
             continue
-        raw.append([song_num, main(wav_path, pitch_path)])
+        median_result, mode_result = main(wav_path, pitch_path)
+        median_raw[song_num] = median_result
+        mode_raw[song_num] = mode_result 
         print(f'{song_num}-th song done')
-        num += 1
 
-    output_file_name = os.path.join(output_loc, f'{begin}_{end}')
-    postprocess(output_file_name, raw)
+    output_file_name = os.path.join(output_dir, f'{begin}_{end}_median.json')
+    postprocess(output_file_name, median_raw)
+
+    output_file_name = os.path.join(output_dir, f'{begin}_{end}_mode.json')
+    postprocess(output_file_name, mode_raw)
