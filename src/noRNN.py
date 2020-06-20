@@ -9,6 +9,9 @@ from scipy import stats
 import time
 
 from madmom.audio.filters import LogarithmicFilterbank
+from madmom.audio.filters import MelFilterbank
+from madmom.audio.filters import SimpleChromaFilterbank 
+from madmom.audio.filters import  HarmonicFilterbank
 from madmom.features.onsets import SpectralOnsetProcessor
 from madmom.features.onsets import RNNOnsetProcessor
 from madmom.features.onsets import CNNOnsetProcessor
@@ -31,16 +34,21 @@ class Note:
 
 def get_onset(wav_path):
 
-    y, sr = librosa.core.load(wav_path, sr= None)
+    y, sr = librosa.core.load(wav_path, sr=22050)
+    #with open('./vocal.json', 'r') as tmp:
+    #    tmp = json.load(tmp)
+    #y = tmp['1']
+    #sr = 22050
+    
     sos = signal.butter(25, 100, btype= 'highpass', fs= sr, output='sos')
     wav_data= signal.sosfilt(sos, y)
     wav_data= normalize(wav_data)
-
-    #sodf = SpectralOnsetProcessor(onset_method='complex_flux', fps= 50, filterbank=LogarithmicFilterbank, fmin= 100, num_bands= 24, norm= True)
-    sodf = CNNOnsetProcessor()
+    
+    sodf = SpectralOnsetProcessor(onset_method='spectral_flux', fps= 50, filterbank=LogarithmicFilterbank, fmin= 100, num_bands= 24, norm= True)
+    #sodf = CNNOnsetProcessor()
     #sodf = RNNOnsetProcessor()
     from madmom.audio.signal import Signal
-    onset_strength= (sodf(Signal(data= wav_data, sample_rate= sr)))
+    onset_strength= sodf(Signal(data= wav_data, sample_rate= sr))
     onset_strength= librosa.util.normalize(onset_strength)
     h_length= int(librosa.time_to_samples(1./50, sr=sr))
 
@@ -58,7 +66,7 @@ def generate_notes(onset_times, ep_frames):
     onset_num= 0
     cur_frame= []
     cur_pitch= []
-
+    
     for time, pitch in ep_frames:
 
         if (onset_num+ 1) < len(onset_times) and time > (onset_times[onset_num+ 1]- 0.016):
