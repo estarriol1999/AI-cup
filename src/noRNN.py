@@ -32,23 +32,20 @@ class Note:
         self.offset_time = offset_time
         self.pitch = 0
 
-def get_onset(wav_path):
+def get_onset(vocal_path):
 
-    y, sr = librosa.core.load(wav_path, sr=22050)
-    #with open('./vocal.json', 'r') as tmp:
-    #    tmp = json.load(tmp)
-    #y = tmp['1']
-    #sr = 22050
+    y = np.load(vocal_path)
+    sr = 22050
     
     sos = signal.butter(25, 100, btype= 'highpass', fs= sr, output='sos')
-    wav_data= signal.sosfilt(sos, y)
-    wav_data= normalize(wav_data)
+    vocal_data= signal.sosfilt(sos, y)
+    vocal_data= normalize(vocal_data)
     
     sodf = SpectralOnsetProcessor(onset_method='spectral_flux', fps= 50, filterbank=LogarithmicFilterbank, fmin= 100, num_bands= 24, norm= True)
     #sodf = CNNOnsetProcessor()
     #sodf = RNNOnsetProcessor()
     from madmom.audio.signal import Signal
-    onset_strength= sodf(Signal(data= wav_data, sample_rate= sr))
+    onset_strength= sodf(Signal(data= vocal_data, sample_rate= sr))
     onset_strength= librosa.util.normalize(onset_strength)
     h_length= int(librosa.time_to_samples(1./50, sr=sr))
 
@@ -128,11 +125,11 @@ def notes2list(notes):
             result.append([note.onset_time, note.offset_time, note.pitch])
     return result
 
-def main(wav_path, pitch_path):
+def main(vocal_path, pitch_path):
     
     ep_frames = json.load(open(pitch_path))
 
-    onset_times = get_onset(wav_path)
+    onset_times = get_onset(vocal_path)
     notes = generate_notes(onset_times, ep_frames)
     
     median_notes   = get_note_level_pitch(notes, MEDIAN)
@@ -145,7 +142,7 @@ def main(wav_path, pitch_path):
 
 
 if __name__ == '__main__':
-    wav_dir = sys.argv[1]
+    vocal_dir = sys.argv[1]
     pitch_dir = sys.argv[2]
     output_dir = sys.argv[3]
     begin = int(sys.argv[4])
@@ -153,14 +150,14 @@ if __name__ == '__main__':
     median_raw = {}
     mode_raw = {}
     for song_num in range(begin, end):
-        wav_path = os.path.join(wav_dir, f'{song_num}.wav')
+        vocal_path = os.path.join(vocal_dir, f'{song_num}.npy')
         pitch_path = os.path.join(pitch_dir, f'{song_num}', f'{song_num}_vocal.json')
-        if not os.path.isfile(wav_path) or not os.path.isfile(pitch_path):
+        if not os.path.isfile(vocal_path) or not os.path.isfile(pitch_path):
             print(f'{song_num}-th song not found')
             median_raw[song_num] = []
             mode_raw[song_num] = []
             continue
-        median_result, mode_result = main(wav_path, pitch_path)
+        median_result, mode_result = main(vocal_path, pitch_path)
         median_raw[song_num] = median_result
         mode_raw[song_num] = mode_result 
         print(f'{song_num}-th song done')

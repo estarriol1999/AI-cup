@@ -13,7 +13,7 @@ import librosa.display
 def vocal_separartion(wav_path):
     #############################################
     # Load an example with vocals.
-    y, sr = librosa.load(wav_path, sr=None)
+    y, sr = librosa.load(wav_path, sr=22050)
     
     # And compute the spectrogram magnitude and phase
     S_full, phase = librosa.magphase(librosa.stft(y))
@@ -80,11 +80,9 @@ if __name__ == '__main__':
         wav_path = os.path.join(wav_dir, f'{song_num}.wav')
         if not os.path.isfile(wav_path):
             print(f'{song_num}-th song not found')
-            vocal = []
             continue
-        vocal =  np.around(vocal_separartion(wav_path), 3).tolist()
+        vocal =  np.around(vocal_separartion(wav_path), 3)
         print(f'{song_num}-th song done')
-
-        output_path = os.path.join(output_dir, f'{song_num}.json')
-        with open(output_path, 'w') as json_file:
-            json.dump(vocal, json_file)
+        
+        output_path = os.path.join(output_dir, f'{song_num}')
+        np.save(output_path, vocal)
